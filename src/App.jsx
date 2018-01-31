@@ -1,15 +1,18 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
-import './App.css';
+import Page from './Page'
+
+import './App.css'
+// import '../node_modules/semantic-ui-css/semantic.min.css'
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <p>Lets start the project</p>
+        <Page />
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App
