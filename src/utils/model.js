@@ -1,4 +1,4 @@
-export const utils = {
+export const operator = {
   reduce: { count: (a, b) => a.anzahl_reisende + b.anzahl_reisende },
   filter: {
     by: ({ date, cantonStart, cantonEnd, value }) => ({
