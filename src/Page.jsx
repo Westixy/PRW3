@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 
-import * as sui from 'semantic-ui-react'
-
+import { Button } from 'semantic-ui-react'
 
 export default class Page extends Component {
   render() {
     return (
       <div className="Page">
+        <Button content="Hey Semantic !" circular />
       </div>
     )
   }

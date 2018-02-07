@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import Page from './Page'
 
 import './App.css'
-// import '../node_modules/semantic-ui-css/semantic.min.css'
+import './assets/semantic-ui/semantic.min.css'
 
 class App extends Component {
   render() {
