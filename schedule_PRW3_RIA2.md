@@ -10,8 +10,8 @@
 | 4   | Avancement du projet                                 |
 | 5   | Avancement du projet                                 |
 | 6   | Avancement du projet                                 |
-| 7   | Avancement du projet                                 |
-| 8   | Finalisation du projet                               |
+| 7   | Documentation sur la creation d'une app React + D3   |
+| 8   | Finalisation du projet et rendu de la documentation  |
 | 9   | Rendu du projet                                      |
 
 ## RIA2
