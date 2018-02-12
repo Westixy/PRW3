@@ -1,56 +1,77 @@
 import * as Data from '../data/trajets-des-voyageurs-entre-les-cantons-suisses1.json'
 
-export const operator = {
-  reduce: { count: (a, b) => a.anzahl_reisende + b.anzahl_reisende },
-  filter: {
-    by: ({ date, cantonStart, cantonEnd, value }) => ({
-      anzahl_reisende: value,
-      start_kanton: cantonStart,
-      ziel_kanton: cantonEnd,
-      reisedatum: date,
-    }),
-  },
-}
-
-export class Model {
+export class TravelItem {
   constructor(data) {
-    console.log(data)
-    this.data = data
-    this.records = this.data.map(a => a.fields)
+    if (!data instanceof TravelItem) {
+      this.cantonStart = data.start_kanton
+      this.cantonEnd = data.ziel_kanton
+      this.value = data.anzahl_reisende
+      this.date = data.reisedatum
+    } else {
+      this.cantonStart = data.cantonStart
+      this.cantonEnd = data.cantonEnd
+      this.value = data.value
+      this.date = data.date
+    }
   }
 
-  filter(filter) {
-    return this.records.filter(a => {
-      for (let key in filter) {
-        if (filter[key] === undefined) continue
-        if (filter[key] instanceof RegExp) {
-          if (!filter[key].test()) return false
-        } else if (filter[key] !== a[key]) return false
-      }
-      return true
-    })
+  dateIsBetween(dateStart, dateEnd) {
+    const ds = Number(dateStart.replace(/\-/g, ''))
+    const de = Number(dateEnd.replace(/\-/g, ''))
+    const dt = Number(this.date.replace(/\-/g, ''))
+    return dt >= ds && dt <= de
   }
+
+  hasCanton(cantonName) {
+    return this.cantonStart == cantonName || this.cantonEnd == cantonName
+  }
+
 }
 
 export class Travels {
-  constructor() {
-    this.model = new Model(Data)
-    this.filters = {}
+  constructor(data) {
+    if (!data instanceof Travels) this.travelItems = data.records.map(a => a.fields).map(a => new TravelItem(a))
+    else this.travelItems = clone(data.travelItems)
   }
 
-  get cantonList(){
+  filter(act) {
+    return new Travels(this.travelItems.filter(act))
+  }
+
+  map(act) {
+    return new Travels(this.travelItems.map(act))
+  }
+
+  reduce(act) {
+    return this.travelItems.reduce(act)
+  }
+
+  concat(travels) {
+    return new Travels(this.travelItems.concat(travels.travelItems))
+  }
+
+  get totalValue() {
+    return this.reduce((a, b) => a.value + b.value)
+  }
+
+  get length() {
+    return this.travelItems.length
+  }
+
+  get cantonList() {
     let cantons = {}
-    this.model.records.forEach(a=>cantons[a.start_kanton]=1)
+    this.travelItems.forEach(a => {
+      cantons[a.cantonStart] = 1
+      cantons[a.cantonEnd] = 1
+    })
     return Object.keys(cantons)
   }
 
-  get dateList(){
-      let dates = {}
-      this.model.records.forEach(a=>dates[a.reisedatum]=1)
-      return Object.keys(dates).sort()
+  get dateList() {
+    let dates = {}
+    this.model.records.forEach(a => dates[a.reisedatum] = 1)
+    return Object.keys(dates).sort()
   }
-
-
 }
 
-export const data = new Travels()
+export const data = new Travels(Data)
