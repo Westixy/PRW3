@@ -1,4 +1,4 @@
-import * as Data from '../data/trajets-des-voyageurs-entre-les-cantons-suisses1.json'
+import Data from '../data/trajets-des-voyageurs-entre-les-cantons-suisses1.json'
 
 export class TravelItem {
   constructor(data) {
@@ -8,6 +8,7 @@ export class TravelItem {
       this.value = data.anzahl_reisende
       this.date = data.reisedatum
     } else {
+      if(data.fields) data = data.fields
       this.cantonStart = data.cantonStart
       this.cantonEnd = data.cantonEnd
       this.value = data.value
@@ -16,22 +17,23 @@ export class TravelItem {
   }
 
   dateIsBetween(dateStart, dateEnd) {
-    const ds = Number(dateStart.replace(/\-/g, ''))
-    const de = Number(dateEnd.replace(/\-/g, ''))
-    const dt = Number(this.date.replace(/\-/g, ''))
+    const ds = Number(dateStart.replace(/-/g, ''))
+    const de = Number(dateEnd.replace(/-/g, ''))
+    const dt = Number(this.date.replace(/-/g, ''))
     return dt >= ds && dt <= de
   }
 
   hasCanton(cantonName) {
-    return this.cantonStart == cantonName || this.cantonEnd == cantonName
+    return this.cantonStart === cantonName || this.cantonEnd === cantonName
   }
-
 }
 
 export class Travels {
   constructor(data) {
-    if (!data instanceof Travels) this.travelItems = data.records.map(a => a.fields).map(a => new TravelItem(a))
-    else this.travelItems = clone(data.travelItems)
+    if (!(data instanceof Travels)){
+      this.travelItems = data
+        .map(a => new TravelItem(a))
+    }else this.travelItems = [...data.travelItems]
   }
 
   filter(act) {
@@ -69,7 +71,7 @@ export class Travels {
 
   get dateList() {
     let dates = {}
-    this.model.records.forEach(a => dates[a.reisedatum] = 1)
+    this.model.records.forEach(a => (dates[a.reisedatum] = 1))
     return Object.keys(dates).sort()
   }
 }
