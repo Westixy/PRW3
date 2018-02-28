@@ -2,36 +2,37 @@ import React, { Component } from 'react'
 import { Button, Container, Header } from 'semantic-ui-react'
 import ChordDiagram from 'react-chord-diagram'
 import { Animate } from 'react-move'
-import { easeExpInOut } from 'd3-ease'
+import { easeExpInOut, easeLinear } from 'd3-ease'
 
 import { data } from './utils/model'
-
-const genColor = () => '#' + Math.floor(0xffffff * Math.random()).toString(16)
 
 export default class Page extends Component {
   constructor(props) {
     super(props)
+    let d = data.noUndefined.transform()
     this.state = {
-      do: 0,
-      matrix: [
-        [10000, 5871, 8916, 2868],
-        [10000, 10048, 2060, 6171],
-        [10000, 16145, 8090, 8045],
-        [10000, 990, 940, 6907],
-      ],
       oldMatrix: null,
+      labels: d.labels,
+      matrix: d.matrix,
+      do: 0,
+      colors: d.colors,
     }
     this.done = false
+    this.data = data
   }
 
   handleClick() {
+    this.changeFromData(data)
+  }
+
+  changeFromData(data){
+    if(data.matrix===undefined) data = data.noUndefined.transform()
     this.setState({
       oldMatrix: this.state.matrix,
-      matrix: this.state.matrix.map(row =>
-        row.map(elem => Math.random() * 10000)
-      ),
-      do: 1,
-      colors: [0,1,2,3].map(a=>genColor()),
+      labels: data.labels,
+      matrix: data.matrix,
+      do: this.state.do === 0 ? 1 : 0,
+      colors: data.colors,
     })
   }
 
@@ -54,28 +55,42 @@ export default class Page extends Component {
           update={() => ({
             x: [this.state.do],
             colors: [this.state.colors],
-            timing: { duration: 2000, ease: easeExpInOut },
+            timing: { duration: 3000, ease: easeLinear },
           })}
         >
           {state => {
-            const { x, colors } = state
-            if (x === 1 && !this.done) {
-              this.done = true
-              this.setState({ do: 0, oldMatrix: this.state.matrix })
-            } else this.done = false
-            const a = this.state.oldMatrix
-              ? this.state.oldMatrix.map((row, ri) =>
-                  row.map(
-                    (cell, ci) =>
-                      (cell += x * (this.state.matrix[ri][ci] - cell))
-                  )
-                )
-              : this.state.matrix
+            let { x, colors } = state
+            let a = this.state.matrix
+            if (this.state.oldMatrix !== null) {
+              x = this.state.do === 0 ? 1 - x : x
+
+              let base = this.state.oldMatrix
+              let change = this.state.matrix
+              let isNormal = true
+
+              if (base.length < change.length) {
+                [base, change] = [change, base]
+                isNormal = false
+              }
+
+              a = base.map((row, ri) => {
+                return row.map((cell, ci) => {
+                  let cellChange = 0
+                  let cellBase = cell
+                  if (change[ri] && change[ri][ci]) cellChange = change[ri][ci]
+                  if (!isNormal) {
+                    cellBase = cellChange
+                    cellChange = cell
+                  }
+                  return Math.round(cellBase + x * (cellChange - cellBase))
+                })
+              })        
+            }
             return (
               <ChordDiagram
                 matrix={a}
                 componentId={1}
-                groupLabels={colors}
+                groupLabels={this.state.labels}
                 groupColors={colors}
               />
             )
