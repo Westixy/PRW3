@@ -1,15 +1,5 @@
 import React, { Component } from 'react'
-import {
-  Card,
-  Button,
-  Container,
-  Header,
-  List,
-  Dropdown,
-  Checkbox,
-  Grid,
-  Input,
-} from 'semantic-ui-react'
+import  {Divider, Card, Button, Container, Header, List, Dropdown, Checkbox, Grid, Label, Input, } from 'semantic-ui-react'
 import ChordDiagram from 'react-chord-diagram'
 import { Animate } from 'react-move'
 import { easeExpInOut } from 'd3-ease'
@@ -206,6 +196,7 @@ export default class Page extends Component {
         <Header as="h1">
           Where people goes <small>PRW3 ESO</small>
         </Header>
+        <div> Affichage des trajets des personnes entre les cantons suisse en 2016.</div><br/>
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
@@ -281,7 +272,7 @@ export default class Page extends Component {
                 }}
               >
                 <List>
-                  {this.state.labels.map((a, ai) => {
+                  {[...this.state.labels].sort().map((a, ai) => {
                     a = this.getElemFromShort(a)
                     return (
                       <List.Item
@@ -372,8 +363,14 @@ export default class Page extends Component {
             }}
           </Animate>
         </div>
-        <div>
-          Source :  <a href="https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton">https://data.swisscom.com</a>
+        <div style={{padding:10}}>
+          <Header as="h3">Informations</Header>
+          <Label>Project<Label.Detail>Where people goes</Label.Detail></Label>
+          <Divider hidden fitted/><Label>Description<Label.Detail> Affichage des trajets des personnes entre les cantons suisse en 2016</Label.Detail></Label>
+          <Divider hidden fitted/><Label>Author<Label.Detail><a href="https://github.com/westixy">Esteban Sotillo</a></Label.Detail></Label>
+          <Divider hidden fitted/><Label>Technologies<Label.Detail>React, D3, react-move, semantic-ui, react-chord-diagram, moment</Label.Detail></Label>
+          <Divider hidden fitted/><Label>Tags<Label.Detail>cantons, suisse, chord, trajet, swisscom</Label.Detail></Label>
+          <Divider hidden fitted/><Label>Data source<Label.Detail> <a href="https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton">https://data.swisscom.com</a></Label.Detail></Label>
         </div>
       </Container>
     )
