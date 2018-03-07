@@ -1,8 +1,5 @@
 import Data from '../data/trajets-des-voyageurs-entre-les-cantons-suisses1.json'
 
-const genColor = () =>
-  '#' + ('000000' + Math.floor(0xffffff * Math.random()).toString(16)).slice(-6)
-
 export class TravelItem {
   constructor(data) {
     if (data === undefined) debugger
@@ -127,10 +124,9 @@ export class Travels {
     return Object.keys(dates).sort()
   }
 
-  transform() {
+  transform(sorted = true) {
     const result = {
       matrix: [],
-      colors: [],
       labels: [],
     }
     let cantonList = this.cantonList
@@ -143,11 +139,53 @@ export class Travels {
           return travels[cantonName].totalValue
         })
       )
-      result.colors.push(genColor())
     })
     if (result.matrix.length === 0) result.matrix = [[0]]
+
+    if(sorted === true) {
+
+    }
 
     return result
   }
 }
+
+export class Control {
+  constructor(data) {
+    this.data = data
+    this.tf = {}
+    this.addSimple('withoutOwn')
+    this.addSimple('noUndefined')
+  }
+  enable(name) {
+    if (this.tf[name] !== undefined) this.tf[name].enabled = true
+  }
+
+  disable(name) {
+    if (this.tf[name] !== undefined) this.tf[name].enabled = false
+  }
+
+  toggle(name) {
+    if (this.tf[name] !== undefined)
+      this.tf[name].enabled = !this.tf[name].enabled
+  }
+
+  addAction(name, action, enabled = true) {
+    this.tf[name] = { enabled, action }
+  }
+
+  addSimple(name, enabled = true) {
+    this.addAction(name, a => a[name], enabled)
+  }
+
+  getFiltered(data = this.data) {
+    for (let key in this.tf) {
+      const tf = this.tf[key]
+      if (tf.enabled) data = tf.action(data)
+    }
+
+    return data
+  }
+}
+
 export const data = new Travels(Data)
