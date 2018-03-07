@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
 import {
+  Card,
   Button,
   Container,
   Header,
   List,
   Dropdown,
   Checkbox,
+  Grid,
   Input,
 } from 'semantic-ui-react'
 import ChordDiagram from 'react-chord-diagram'
@@ -143,16 +145,17 @@ export default class Page extends Component {
       },
       { origin: 'Undefined', name: 'Inconnu', n: 'NA', color: '#000000' },
     ]
-
+    this.dates = data.dateList.map(a => moment(a))
     this.state = {
       oldMatrix: null,
       labels: this.transformToShort(d.labels),
       matrix: d.matrix,
       do: 0,
       colors: this.getColorsFromLabels(d.labels),
+      dateStart: this.dates[0].format('YYYY-MM-DD'),
+      dateEnd: this.dates[this.dates.length - 1].format('YYYY-MM-DD'),
     }
     this.done = false
-    this.dates = data.dateList.map(a => moment(a))
     this.data = data
     this.curData = data
   }
@@ -174,8 +177,12 @@ export default class Page extends Component {
   changeFromData(data) {
     if (data.matrix === undefined) {
       this.curData = data
+      data = data.filter(a =>
+        a.dateIsBetween(this.state.dateStart, this.state.dateEnd)
+      )
       data = this.control.getFiltered(data).transform()
     }
+    console.log(this.state)
     this.setState({
       oldMatrix: this.state.matrix,
       labels: this.transformToShort(data.labels),
@@ -185,84 +192,145 @@ export default class Page extends Component {
     })
   }
 
+  handleDateChange(date, start = true) {
+    if (!/2016-[012]\d-([012]\d|3[01])/.test(date)) return
+    let key = 'dateStart'
+    if (!start) key = 'dateEnd'
+    this.setState({ [key]: date })
+    this.changeFromData(this.curData)
+  }
+
   render() {
     return (
       <Container className="Page">
         <Header as="h1">
           Where people goes <small>PRW3 ESO</small>
         </Header>
-        <div>
-          <Input
-            label={'start'}
-            labelPosition="right"
-            value={this.dates[0].format('YYYY-MM-DD')}
-          />
-          <br />
-          <Input
-            label={'end'}
-            labelPosition="right"
-            value={this.dates[this.dates.length - 1].format('YYYY-MM-DD')}
-          />
-          <br />
-          <Button
-            content="full"
-            circular
-            onClick={() => this.changeFromData(this.data)}
-          />
-          <br />
-          {Object.keys(this.control.tf).map(a => {
-            let b = this.control.tf[a]
-            return (
-              <div key={a}>
-                <Checkbox
-                  toggle
-                  label={a}
-                  checked={b.enabled}
-                  onChange={(ev, value) => {
-                    b.enabled = value.checked
-                    this.changeFromData(this.curData)
-                  }}
-                />
-              </div>
-            )
-          })}
-          <br />
-          <Dropdown
-            scrolling
-            multiple
-            selection
-            onChange={(_, a) =>
-              this.changeFromData(
-                this.data.only(
-                  a.value.map(b => this.translate.find(c => b === c.n).origin)
+        <Grid>
+          <Grid.Row columns={2}>
+            <Grid.Column>
+              <Input
+                label={'start'}
+                labelPosition="left"
+                placeholder={this.state.dateStart}
+                onChange={(_, { value }) => this.handleDateChange(value, true)}
+              />{' '}
+              <Input
+                label={'end'}
+                placeholder={this.state.dateEnd}
+                labelPosition="right"
+                onChange={(_, { value }) => this.handleDateChange(value, false)}
+              />
+              <br />
+              <br />
+              <Button
+                content="Tous les cantons"
+                circular
+                onClick={() => this.changeFromData(this.data)}
+              />
+              <br />
+              <br />
+              {Object.keys(this.control.tf).map(a => {
+                let b = this.control.tf[a]
+                return (
+                  <span key={a}>
+                    <Checkbox
+                      toggle
+                      label={a}
+                      checked={b.enabled}
+                      onChange={(ev, value) => {
+                        b.enabled = value.checked
+                        this.changeFromData(this.curData)
+                      }}
+                    />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </span>
                 )
-              )
-            }
-            options={this.translate
-              .map(a => ({
-                key: a.n,
-                text: a.name,
-                value: a.n,
-              }))
-              .sort((a, b) => a.text.localeCompare(b.text))}
-          />
-        </div>
+              })}
+              <br />
+              <br />
+              <Dropdown
+                scrolling
+                multiple
+                selection
+                onChange={(_, a) =>
+                  this.changeFromData(
+                    this.data.only(
+                      a.value.map(
+                        b => this.translate.find(c => b === c.n).origin
+                      )
+                    )
+                  )
+                }
+                options={this.translate
+                  .map(a => ({
+                    key: a.n,
+                    text: a.name,
+                    value: a.n,
+                  }))
+                  .sort((a, b) => a.text.localeCompare(b.text))}
+              />
+            </Grid.Column>
+            <Grid.Column>
+              Liste des cantons
+              <Card
+                style={{
+                  maxHeight: '160px',
+                  overflow: 'auto',
+                  padding: '5px',
+                  width: '100%',
+                }}
+              >
+                <List>
+                  {this.state.labels.map((a, ai) => {
+                    a = this.getElemFromShort(a)
+                    return (
+                      <List.Item
+                        key={ai}
+                        onClick={() =>
+                          this.changeFromData(
+                            this.data.withoutOwn.hasOne([a.origin])
+                          )
+                        }
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <List.Content>
+                          <small
+                            style={{
+                              fontFamily: 'monospace',
+                              color: a.color,
+                            }}
+                          >
+                            [{a.n}]
+                          </small>{' '}
+                          {a.name}
+                        </List.Content>
+                      </List.Item>
+                    )
+                  })}
+                </List>
+              </Card>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
 
         <div style={{ textAlign: 'center' }}>
           <Animate
             start={() => ({
               x: 0,
               colors: this.state.colors,
+              labels: this.state.labels,
             })}
             update={() => ({
               x: [this.state.do],
               colors: [this.state.colors],
+              labels: [this.state.labels],
               timing: { duration: 1500, ease: easeExpInOut },
             })}
           >
             {state => {
-              let { x, colors } = state
+              let { x, colors, labels } = state
               let a = this.state.matrix
+
               if (this.state.oldMatrix !== null) {
                 x = this.state.do === 0 ? 1 - x : x
 
@@ -291,41 +359,22 @@ export default class Page extends Component {
               }
               if (x === 1) {
                 a = this.state.matrix
+                labels = this.state.labels
               }
               return (
                 <ChordDiagram
                   matrix={a}
                   componentId={1}
-                  groupLabels={this.state.labels}
+                  groupLabels={labels}
                   groupColors={colors}
                 />
               )
             }}
           </Animate>
         </div>
-        <List>
-          {this.state.labels
-            .sort((a, b) => (a.name ? a.name.localeCompare(b.name) : 0))
-            .map((a, ai) => {
-              a = this.getElemFromShort(a)
-              return (
-                <List.Item
-                  key={ai}
-                  onClick={() =>
-                    this.changeFromData(this.data.withoutOwn.hasOne([a.origin]))
-                  }
-                  style={{ cursor: 'pointer' }}
-                >
-                  <List.Content>
-                    <small style={{ fontFamily: 'monospace', color: a.color }}>
-                      [{a.n}]
-                    </small>{' '}
-                    {a.name}
-                  </List.Content>
-                </List.Item>
-              )
-            })}
-        </List>
+        <div>
+          Source :  <a href="https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton">https://data.swisscom.com</a>
+        </div>
       </Container>
     )
   }

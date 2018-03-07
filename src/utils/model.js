@@ -124,7 +124,7 @@ export class Travels {
     return Object.keys(dates).sort()
   }
 
-  transform(sorted = true) {
+  transform() {
     const result = {
       matrix: [],
       labels: [],
@@ -141,10 +141,6 @@ export class Travels {
       )
     })
     if (result.matrix.length === 0) result.matrix = [[0]]
-
-    if(sorted === true) {
-
-    }
 
     return result
   }
