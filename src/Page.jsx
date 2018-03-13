@@ -1,5 +1,16 @@
 import React, { Component } from 'react'
-import  {Divider, Card, Button, Container, Header, List, Dropdown, Checkbox, Grid, Label, Input, } from 'semantic-ui-react'
+import {
+  Divider,
+  Card,
+  Button,
+  Container,
+  Header,
+  List,
+  Dropdown,
+  Checkbox,
+  Grid,
+  Label,
+} from 'semantic-ui-react'
 import ChordDiagram from 'react-chord-diagram'
 import { Animate } from 'react-move'
 import { easeExpInOut } from 'd3-ease'
@@ -141,6 +152,8 @@ export default class Page extends Component {
       labels: this.transformToShort(d.labels),
       matrix: d.matrix,
       do: 0,
+      startDateList: data.dateList,
+      endDateList: data.dateList.reverse(),
       colors: this.getColorsFromLabels(d.labels),
       dateStart: this.dates[0].format('YYYY-MM-DD'),
       dateEnd: this.dates[this.dates.length - 1].format('YYYY-MM-DD'),
@@ -172,7 +185,6 @@ export default class Page extends Component {
       )
       data = this.control.getFiltered(data).transform()
     }
-    console.log(this.state)
     this.setState({
       oldMatrix: this.state.matrix,
       labels: this.transformToShort(data.labels),
@@ -184,9 +196,22 @@ export default class Page extends Component {
 
   handleDateChange(date, start = true) {
     if (!/2016-[012]\d-([012]\d|3[01])/.test(date)) return
-    let key = 'dateStart'
-    if (!start) key = 'dateEnd'
-    this.setState({ [key]: date })
+    let key = ['dateStart', 'endDateList']
+    let list = this.data.dateList
+      .filter(
+        a =>
+          !start
+            ? Number(a.replace(/-/g, '')) < Number(date.replace(/-/g, ''))
+            : Number(a.replace(/-/g, '')) > Number(date.replace(/-/g, ''))
+      )
+      .sort()
+      .reverse()
+    if (!start){
+      key = ['dateEnd', 'startDateList']
+      list = list.reverse()
+    }
+
+    this.setState({ [key[0]]: date, [key[1]]: list })
     this.changeFromData(this.curData)
   }
 
@@ -196,21 +221,35 @@ export default class Page extends Component {
         <Header as="h1">
           Where people goes <small>PRW3 ESO</small>
         </Header>
-        <div> Affichage des trajets des personnes entre les cantons suisse en 2016.</div><br/>
+        <div>
+          {' '}
+          Affichage des trajets des personnes entre les cantons suisse en 2016.
+        </div>
+        <br />
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
-              <Input
-                label={'start'}
-                labelPosition="left"
-                placeholder={this.state.dateStart}
+              <Dropdown
+                placeholder="Date de début "
                 onChange={(_, { value }) => this.handleDateChange(value, true)}
-              />{' '}
-              <Input
-                label={'end'}
-                placeholder={this.state.dateEnd}
-                labelPosition="right"
+                search
+                selection
+                options={this.state.startDateList.map(a => ({
+                  key: a,
+                  value: a,
+                  text: a,
+                }))}
+              />
+              <Dropdown
+                placeholder="Date de fin "
                 onChange={(_, { value }) => this.handleDateChange(value, false)}
+                search
+                selection
+                options={this.state.endDateList.map(a => ({
+                  key: a,
+                  value: a,
+                  text: a,
+                }))}
               />
               <br />
               <br />
@@ -363,14 +402,46 @@ export default class Page extends Component {
             }}
           </Animate>
         </div>
-        <div style={{padding:10}}>
+        <div style={{ padding: 10 }}>
           <Header as="h3">Informations</Header>
-          <Label>Project<Label.Detail>Where people goes</Label.Detail></Label>
-          <Divider hidden fitted/><Label>Description<Label.Detail> Affichage des trajets des personnes entre les cantons suisse en 2016</Label.Detail></Label>
-          <Divider hidden fitted/><Label>Author<Label.Detail><a href="https://github.com/westixy">Esteban Sotillo</a></Label.Detail></Label>
-          <Divider hidden fitted/><Label>Technologies<Label.Detail>React, D3, react-move, semantic-ui, react-chord-diagram, moment</Label.Detail></Label>
-          <Divider hidden fitted/><Label>Tags<Label.Detail>cantons, suisse, chord, trajet, swisscom</Label.Detail></Label>
-          <Divider hidden fitted/><Label>Data source<Label.Detail> <a href="https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton">https://data.swisscom.com</a></Label.Detail></Label>
+          <Label>
+            Project<Label.Detail>Where people goes</Label.Detail>
+          </Label>
+          <Divider hidden fitted />
+          <Label>
+            Description<Label.Detail>
+              {' '}
+              Affichage des trajets des personnes entre les cantons suisse en
+              2016
+            </Label.Detail>
+          </Label>
+          <Divider hidden fitted />
+          <Label>
+            Author<Label.Detail>
+              <a href="https://github.com/westixy">Esteban Sotillo</a>
+            </Label.Detail>
+          </Label>
+          <Divider hidden fitted />
+          <Label>
+            Technologies<Label.Detail>
+              React, D3, react-move, semantic-ui, react-chord-diagram, moment
+            </Label.Detail>
+          </Label>
+          <Divider hidden fitted />
+          <Label>
+            Tags<Label.Detail>
+              cantons, suisse, chord, trajet, swisscom
+            </Label.Detail>
+          </Label>
+          <Divider hidden fitted />
+          <Label>
+            Data source<Label.Detail>
+              {' '}
+              <a href="https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton">
+                https://data.swisscom.com
+              </a>
+            </Label.Detail>
+          </Label>
         </div>
       </Container>
     )
