@@ -1,6 +1,6 @@
-# where_people_goes
+# trajets_suisse_2016
 
-* Name: Where people goes
+* Name: Trajets suisses 2016
 * Description: Affichage des trajets des personnes entre les cantons suisse en 2016
 * Date: 07032018
 * Author: Esteban Sotillo (http://github.com/Westixy)

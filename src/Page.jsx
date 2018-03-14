@@ -219,11 +219,11 @@ export default class Page extends Component {
     return (
       <Container className="Page">
         <Header as="h1">
-          Where people goes <small>PRW3 ESO</small>
+          Trajets suisses 2016 <small>PRW3 ESO</small>
         </Header>
         <div>
           {' '}
-          Affichage des trajets des personnes entre les cantons suisse en 2016.
+          Affichage des trajets des personnes entre les cantons suisses en 2016.
         </div>
         <br />
         <Grid>
@@ -405,7 +405,7 @@ export default class Page extends Component {
         <div style={{ padding: 10 }}>
           <Header as="h3">Informations</Header>
           <Label>
-            Project<Label.Detail>Where people goes</Label.Detail>
+            Project<Label.Detail>Trajets suisses 2016</Label.Detail>
           </Label>
           <Divider hidden fitted />
           <Label>
