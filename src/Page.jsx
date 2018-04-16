@@ -16,12 +16,14 @@ import { Animate } from 'react-move'
 import { easeExpInOut } from 'd3-ease'
 import moment from 'moment'
 
+import LogSharer from './utils/logSharer'
 import { data, Control } from './utils/model'
 
 export default class Page extends Component {
   constructor(props) {
     super(props)
     this.control = new Control()
+    this.ls = new LogSharer('trajets_suisse_2016')
     let d = this.control.getFiltered(data).transform()
     this.translate = [
       {
@@ -206,11 +208,11 @@ export default class Page extends Component {
       )
       .sort()
       .reverse()
-    if (!start){
+    if (!start) {
       key = ['dateEnd', 'startDateList']
       list = list.reverse()
     }
-
+    this.ls.send('dateChange', key[0], date)
     this.setState({ [key[0]]: date, [key[1]]: list })
     this.changeFromData(this.curData)
   }
@@ -222,7 +224,6 @@ export default class Page extends Component {
           Trajets suisses 2016 <small>PRW3 ESO</small>
         </Header>
         <div>
-          {' '}
           Affichage des trajets des personnes entre les cantons suisses en 2016.
         </div>
         <br />
@@ -256,7 +257,10 @@ export default class Page extends Component {
               <Button
                 content="Tous les cantons"
                 circular
-                onClick={() => this.changeFromData(this.data)}
+                onClick={() => {
+                  this.ls.send('click', 'Tous les cantons', null)
+                  this.changeFromData(this.data)
+                }}
               />
               <br />
               <br />
@@ -270,6 +274,7 @@ export default class Page extends Component {
                       checked={b.enabled}
                       onChange={(ev, value) => {
                         b.enabled = value.checked
+                        this.ls.send('enable', a, b.enabled)
                         this.changeFromData(this.curData)
                       }}
                     />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -282,7 +287,8 @@ export default class Page extends Component {
                 scrolling
                 multiple
                 selection
-                onChange={(_, a) =>
+                onChange={(_, a) => {
+                  this.ls.send('select', 'onlyCantons', a.value)
                   this.changeFromData(
                     this.data.only(
                       a.value.map(
@@ -290,7 +296,7 @@ export default class Page extends Component {
                       )
                     )
                   )
-                }
+                }}
                 options={this.translate
                   .map(a => ({
                     key: a.n,
@@ -316,11 +322,12 @@ export default class Page extends Component {
                     return (
                       <List.Item
                         key={ai}
-                        onClick={() =>
+                        onClick={() => {
+                          this.ls.send('click','canton',a.n)
                           this.changeFromData(
                             this.data.withoutOwn.hasOne([a.origin])
                           )
-                        }
+                        }}
                         style={{ cursor: 'pointer' }}
                       >
                         <List.Content>
@@ -410,7 +417,6 @@ export default class Page extends Component {
           <Divider hidden fitted />
           <Label>
             Description<Label.Detail>
-              {' '}
               Affichage des trajets des personnes entre les cantons suisse en
               2016
             </Label.Detail>
