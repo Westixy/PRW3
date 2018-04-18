@@ -7,3 +7,4 @@
 * Technologies: React, D3, react-move, semantic-ui, react-chord-diagram, moment
 * Tags: cantons, suisse, chord, trajet, swisscom
 * Sources: https://data.swisscom.com/explore/dataset/trajets-des-voyageurs-entre-les-cantons-suisses1/?disjunctive.start_kanton&disjunctive.ziel_kanton
+* Documentation: [Lien vers la doc](./documentation.md)
