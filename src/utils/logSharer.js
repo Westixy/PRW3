@@ -6,9 +6,11 @@ export default class LogSharer {
     return this.config.api + this.config.project
   }
   sendData(data) {
+    let fd = new FormData()
+    fd.append('data',JSON.stringify(data))
     fetch(this.url, {
       method: 'POST',
-      body: { data },
+      body: fd,
     })
       .then(_ => {})
       .catch(e => console.error('failed to send data', data, e))
